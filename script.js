@@ -5,17 +5,20 @@ class AudioManager {
     }
     loadSounds() {
         this.sounds = {
-            music: new Audio('sounds/music.mp3'), coin: new Audio('sounds/coin.mp3'),
-            crash: new Audio('sounds/crash.mp3'), powerup: new Audio('sounds/powerup.mp3'),
-            click: new Audio('sounds/click.mp3'), countdown_tick: new Audio('sounds/countdown_tick.mp3'),
-            race_go: new Audio('sounds/race_go.mp3')
+            music: new Audio('sounds/music.mp3'),
+            coin: new Audio('sounds/coin.mp3'),
+            crash: new Audio('sounds/crash.mp3'),
+            powerup: new Audio('sounds/powerup.mp3'),
+            click: new Audio('sounds/click.mp3'), // Ensure this file exists
+            countdown_tick: new Audio('sounds/countdown_tick.mp3'),
+            race_go: new Audio('sounds/race_go.mp3') // Ensure this file exists
         };
         this.sounds.music.loop = true;
     }
     playSound(name) {
         if (this.isMuted || !this.sounds[name]) return;
         this.sounds[name].currentTime = 0;
-        this.sounds[name].play().catch(e => console.error(`Could not play sound: ${name}`, e));
+        this.sounds[name].play().catch(e => console.warn(`Could not play sound: ${name} (likely not supported or failed to load)`, e));
     }
     stopSound(name) {
         if (this.sounds[name]) {
@@ -90,6 +93,10 @@ class Game {
     constructor() {
         this.audioManager = new AudioManager();
         this.achievementManager = new AchievementManager();
+
+        // PWA installation prompt deferred event
+        this.deferredInstallPrompt = null;
+
         this.getDOMElements();
         this.setupGameConfig();
         this.setupCarAssets();
@@ -134,6 +141,9 @@ class Game {
         this.carOptionsContainer = document.getElementById('car-options');
         this.upgradeOptionsContainer = document.getElementById('upgrade-options');
         this.achievementsList = document.getElementById('achievements-list');
+
+        // Get the PWA install button
+        this.installPwaButton = document.getElementById('install-pwa-button');
     }
 
     setupGameConfig() {
@@ -157,18 +167,29 @@ class Game {
     }
 
     init() {
-    this.bindMethods(); // Move this to the top
-    this.audioManager.loadSounds();
-    this.achievementManager.onUnlock = this.showAchievementToast; // Now this will work
-    this.addEventListeners();
-    this.loadPlayerData();
-    this.updateMuteButtonIcon();
-    this.showMainMenu();
-}
-    
+        this.bindMethods();
+        this.audioManager.loadSounds();
+        this.achievementManager.onUnlock = this.showAchievementToast;
+        this.addEventListeners();
+        this.loadPlayerData();
+        this.updateMuteButtonIcon();
+        this.showMainMenu();
+        this.setupPWAInstallPrompt(); // Call PWA setup here
+    }
+
     bindMethods() {
-        Object.getOwnPropertyNames(Object.getPrototypeOf(this)).forEach(prop => {
-            if (typeof this[prop] === 'function' && prop !== 'constructor') this[prop] = this[prop].bind(this);
+        const methodsToBind = [
+            'startGame', 'showMainMenu', 'togglePause', 'showGarage',
+            'showAchievements', 'handleMuteToggle', 'handleKeyPress',
+            'handleCarSelection', 'handleUpgrade', 'spawnItems', 'gameLoop',
+            'increaseDifficulty', 'showAchievementToast',
+            'handlePWAInstallClick', 'handlePWAInstalled'
+        ];
+
+        methodsToBind.forEach(method => {
+            if (typeof this[method] === 'function') {
+                this[method] = this[method].bind(this);
+            }
         });
     }
 
@@ -194,7 +215,7 @@ class Game {
         }
         localStorage.setItem('powerUpLevels', JSON.stringify(levelsToSave));
     }
-    
+
     addEventListeners() {
         this.startButton.addEventListener('click', this.startGame);
         this.restartButton.addEventListener('click', this.showMainMenu);
@@ -207,13 +228,54 @@ class Game {
         document.addEventListener('keydown', this.handleKeyPress);
         this.touchLeft.addEventListener('touchstart', () => this.moveCar('left'));
         this.touchRight.addEventListener('touchstart', () => this.moveCar('right'));
+
+        // PWA Install Button Listener
+        this.installPwaButton.addEventListener('click', this.handlePWAInstallClick);
     }
-    
+
+    // --- PWA Installation Logic ---
+    setupPWAInstallPrompt() {
+        window.addEventListener('beforeinstallprompt', (event) => {
+            event.preventDefault(); // Prevent default browser prompt
+            this.deferredInstallPrompt = event;
+            this.installPwaButton.style.display = 'block'; // Show the custom install button
+            console.log('beforeinstallprompt fired, showing install button.');
+        });
+
+        window.addEventListener('appinstalled', this.handlePWAInstalled);
+    }
+
+    async handlePWAInstallClick() {
+        this.audioManager.playSound('click'); // Play click sound
+        if (this.deferredInstallPrompt) {
+            console.log('Attempting to prompt PWA installation...');
+            this.deferredInstallPrompt.prompt(); // Show the installation prompt
+
+            const { outcome } = await this.deferredInstallPrompt.userChoice;
+            console.log(`User response to PWA install prompt: ${outcome}`);
+
+            // Hide the install button whether installed or dismissed
+            if (outcome === 'accepted' || outcome === 'dismissed') {
+                this.installPwaButton.style.display = 'none';
+                this.deferredInstallPrompt = null; // Clear the stored event
+            }
+        } else {
+            console.warn('Install button clicked, but deferredInstallPrompt is null. PWA might already be installed or criteria not met.');
+        }
+    }
+
+    handlePWAInstalled() {
+        this.installPwaButton.style.display = 'none';
+        this.deferredInstallPrompt = null;
+        console.log('PWA was successfully installed via the custom prompt!');
+    }
+    // --- End PWA Installation Logic ---
+
     handleMuteToggle() {
         this.audioManager.toggleMute();
         this.updateMuteButtonIcon();
     }
-    
+
     updateMuteButtonIcon() {
         this.muteButton.innerHTML = this.audioManager.isMuted ? '🔇' : '🔊';
     }
@@ -233,8 +295,21 @@ class Game {
         this.highscoreDisplay.textContent = this.highscore;
         this.achievementManager.trackStat('carsUnlocked', this.unlockedCarIds.length);
         this.track.className = 'theme-default';
+
+        // Check PWA installability whenever returning to main menu
+        if (this.deferredInstallPrompt) {
+             this.installPwaButton.style.display = 'block';
+        } else if ('BeforeInstallPromptEvent' in window && !navigator.standalone && !window.matchMedia('(display-mode: standalone)').matches) {
+            // This is a heuristic. If the event hasn't fired but it's theoretically possible,
+            // we could consider showing a message or retrying. For now, rely on deferredPrompt.
+            // navigator.standalone is for iOS "Add to Home Screen"
+            // window.matchMedia is for other PWAs
+             console.log("PWA might be installable, but beforeinstallprompt hasn't fired or was consumed.");
+        } else {
+            this.installPwaButton.style.display = 'none'; // Hide if not installable or already installed
+        }
     }
-    
+
     showGarage() {
         this.audioManager.playSound('click');
         this.mainMenuContent.style.display = 'none';
@@ -243,7 +318,7 @@ class Game {
         this.populateCarOptions();
         this.populateUpgrades();
     }
-    
+
     showAchievements() {
         this.audioManager.playSound('click');
         this.mainMenuContent.style.display = 'none';
@@ -316,7 +391,7 @@ class Game {
         this.savePlayerData();
         this.populateCarOptions();
     }
-    
+
     handleUpgrade(id) {
         this.audioManager.playSound('click');
         const powerUp = this.powerUpDefinitions[id];
@@ -331,7 +406,7 @@ class Game {
             this.populateUpgrades();
         }
     }
-    
+
     startCountdown() {
         return new Promise(resolve => {
             this.countdown.style.display = 'flex'; let count = 3;
@@ -375,12 +450,12 @@ class Game {
         this.difficultyInterval = setInterval(this.increaseDifficulty, this.speedIncreaseInterval);
         this.audioManager.playSound('music');
     }
-    
+
     spawnItems() {
         const lane = Math.floor(Math.random() * 3) - 1;
         const roll = Math.random();
         if (roll < 0.45) {
-            if (Math.random() < 0.3) this.createItem('moving-obstacle', lane);
+            if (Math.random() < 0.3) this.createItem('moving-obstacle', lane); // Check images/obstacle_car.png path
             else this.createItem('obstacle', lane);
         } else if (roll < 0.70) this.createItem('coin', lane);
         else if (roll < 0.80) this.createItem('oil-slick', lane);
@@ -388,7 +463,7 @@ class Game {
         else if (roll < 0.94) this.createItem('shield-powerup', lane);
         else this.createItem('nitro-powerup', lane);
     }
-    
+
     createItem(type, lane) {
         const el = document.createElement('div');
         el.className = `game-item ${type}`; el.dataset.type = type;
@@ -407,7 +482,7 @@ class Game {
             el.style.animation = `pop-in 0.3s ease-out, move-down ${duration}s linear 0.3s forwards`;
         }
     }
-    
+
     moveCar(direction) {
         if (!this.gameRunning || this.isPaused) return;
         const effectiveDirection = this.controlsReversed ? (direction === 'left' ? 'right' : 'left') : direction;
@@ -456,7 +531,7 @@ class Game {
         if (type === 'nitro-powerup') this.activateNitro();
         this.updateUI();
     }
-    
+
     updateUI() {
         this.scoreDisplay.textContent = `Score: ${this.score}`;
         this.coinDisplay.textContent = `Coins: ${this.coins}`;
@@ -482,35 +557,35 @@ class Game {
             this.comboCount = 0; this.updateMultiplier(); this.updateUI();
         }, 2000);
     }
-    
+
     showAchievementToast(achievement) {
         this.achievementToast.innerHTML = `<h3>🏆 Achievement Unlocked!</h3><p>${achievement.name}</p>`;
         this.achievementToast.classList.add('active');
         setTimeout(() => { this.achievementToast.classList.remove('active'); }, 4000);
     }
-    
+
     startTimer(timerElement, duration) {
         timerElement.style.display = 'block';
         const bar = timerElement.querySelector('.timer-bar');
         bar.style.animation = 'none';
-        void bar.offsetHeight;
+        void bar.offsetHeight; // Trigger reflow to restart animation
         bar.style.animation = `timer-bar-drain ${duration / 1000}s linear forwards`;
         setTimeout(() => { timerElement.style.display = 'none'; }, duration);
     }
-    
+
     activateReversedControls() {
         this.audioManager.playSound('powerup');
         this.controlsReversed = true; this.car.classList.add('wobbling'); this.gameContainer.style.filter = 'invert(1)';
         setTimeout(() => { this.controlsReversed = false; this.car.classList.remove('wobbling'); this.gameContainer.style.filter = 'none'; }, 3000);
     }
-    
+
     activateCoinMagnet() {
         this.audioManager.playSound('powerup');
         this.isMagnetActive = true; this.carMagnetField.classList.add('magnet-active');
         this.startTimer(this.magnetTimer, 5000);
         setTimeout(() => { this.isMagnetActive = false; this.carMagnetField.classList.remove('magnet-active'); }, 5000);
     }
-    
+
     activateShield() {
         this.audioManager.playSound('powerup');
         this.isShieldActive = true; this.car.classList.add('shield-active');
@@ -519,7 +594,7 @@ class Game {
         this.startTimer(this.shieldTimer, duration);
         setTimeout(() => { this.isShieldActive = false; this.car.classList.remove('shield-active'); }, duration);
     }
-    
+
     activateNitro() {
         if (this.isNitroActive) return;
         this.audioManager.playSound('powerup');
@@ -543,12 +618,12 @@ class Game {
         this.gameSpeed += this.speedIncreaseAmount; this.initialGameSpeed += this.speedIncreaseAmount;
         this.updateTrackSpeed(); this.changeTheme();
     }
-    
+
     changeTheme() {
         this.currentThemeIndex = (this.currentThemeIndex + 1) % this.themes.length;
         this.track.className = this.themes[this.currentThemeIndex];
     }
-    
+
     updateTrackSpeed() {
         const duration = 0.5 / (this.gameSpeed / 180);
         this.track.style.animationDuration = `${duration}s`;
@@ -622,7 +697,7 @@ class Game {
             }
         }
     }
-    
+
     handleKeyPress(e) {
         if (e.key === 'p' || e.key === 'P') this.togglePause();
         if (this.isPaused) return;

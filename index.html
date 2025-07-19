@@ -6,17 +6,18 @@
   <title>Speed Racer</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
 </head>
 <body>
   <div id="game-container">
     <div id="main-menu" class="screen">
       <button id="mute-button">🔊</button>
-      <div id="main-menu-content" style="display: flex; flex-direction: column; align-items: center;">
-        <h1>Speed Racer</h1>
+      <div id="main-menu-content"> <h1>Speed Racer</h1>
         <p>Total Coins: <span id="total-coins-display">0</span></p>
         <button id="start-game-button">Start Game</button>
         <button id="garage-button">Garage</button>
         <button id="achievements-button">Achievements</button>
+        <button id="install-pwa-button" style="display: none;">Install Game</button>
         <p>Highscore: <span id="highscore-display">0</span></p>
       </div>
       <div id="garage-screen" style="display: none;">
@@ -67,19 +68,17 @@
     <div id="achievement-toast"></div>
   </div>
 
-
-<script src="script.js"></script>
+  <script src="script.js"></script>
 
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
+        // Ensure the path to sw.js is correct, it should be relative to the root
         navigator.serviceWorker.register('/sw.js')
-          .then(reg => console.log('Service Worker: Registered'))
-          .catch(err => console.log(`Service Worker: Error: ${err}`));
+          .then(reg => console.log('Service Worker: Registered', reg))
+          .catch(err => console.error(`Service Worker: Error: ${err}`));
       });
     }
   </script>
-
-  <script src="script.js"></script>
 </body>
 </html>
