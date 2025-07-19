@@ -157,14 +157,14 @@ class Game {
     }
 
     init() {
-        this.audioManager.loadSounds();
-        this.achievementManager.onUnlock = this.showAchievementToast;
-        this.bindMethods();
-        this.addEventListeners();
-        this.loadPlayerData();
-        this.updateMuteButtonIcon();
-        this.showMainMenu();
-    }
+    this.bindMethods(); // Move this to the top
+    this.audioManager.loadSounds();
+    this.achievementManager.onUnlock = this.showAchievementToast; // Now this will work
+    this.addEventListeners();
+    this.loadPlayerData();
+    this.updateMuteButtonIcon();
+    this.showMainMenu();
+}
     
     bindMethods() {
         Object.getOwnPropertyNames(Object.getPrototypeOf(this)).forEach(prop => {
@@ -394,8 +394,13 @@ class Game {
         el.className = `game-item ${type}`; el.dataset.type = type;
         el.style.left = `calc(50% + ${lane * (this.LANE_WIDTH / 2)}px)`;
         el.style.top = `-50px`;
-        this.gamePlayScreen.appendChild(el); this.items.push(el);
-        const duration = (this.gameContainer.offsetHeight + 100) / this.gameSpeed;
+        this.gamePlayScreen.appendChild(el);
+        this.items.push(el);
+
+        const fallDistance = this.gameContainer.offsetHeight + 100;
+        el.style.setProperty('--fall-distance', `${fallDistance}px`);
+
+        const duration = fallDistance / this.gameSpeed;
         if (type === 'moving-obstacle') {
             el.style.animation = `pop-in 0.3s ease-out, move-down ${duration}s linear 0.3s forwards, move-in-lane 4s ease-in-out 0.3s infinite`;
         } else {
@@ -420,25 +425,31 @@ class Game {
 
     handleItemCollection(item, index) {
         const type = item.dataset.type;
-        if (type === 'obstacle') {
-            clearTimeout(this.comboTimeout); this.comboCount = 0;
+        if (type === 'obstacle' || type === 'moving-obstacle') {
+            clearTimeout(this.comboTimeout);
+            this.comboCount = 0;
             if (this.isShieldActive) {
-                this.audioManager.playSound('crash'); item.remove(); this.items.splice(index, 1);
+                this.audioManager.playSound('crash');
+                item.remove();
+                this.items.splice(index, 1);
                 this.achievementManager.trackStat('obstaclesBlocked', 1);
             } else {
-                this.audioManager.playSound('crash'); this.gameOver();
+                this.audioManager.playSound('crash');
+                this.gameOver();
             }
             return;
         }
         if (type === 'coin') {
-            this.coins++; this.comboCount++;
+            this.coins++;
+            this.comboCount++;
             this.updateMultiplier();
             this.score += 10 * this.comboMultiplier;
             this.resetComboTimeout();
             this.audioManager.playSound('coin');
             this.achievementManager.trackStat('maxCombo', this.comboMultiplier);
         }
-        item.remove(); this.items.splice(index, 1);
+        item.remove();
+        this.items.splice(index, 1);
         if (type === 'oil-slick') { clearTimeout(this.comboTimeout); this.comboCount = 0; this.activateReversedControls(); }
         if (type === 'magnet-powerup') this.activateCoinMagnet();
         if (type === 'shield-powerup') this.activateShield();
