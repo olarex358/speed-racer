@@ -1,0 +1,21 @@
+{
+  "name": "Speed Racer Game",
+  "short_name": "Speed Racer",
+  "start_url": ".",
+  "display": "fullscreen",
+  "background_color": "#111111",
+  "theme_color": "#007bff",
+  "description": "A fun and fast-paced racing game.",
+  "icons": [
+    {
+      "src": "images/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "images/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

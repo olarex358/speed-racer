@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Speed Racer</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="game-container">
+    <div id="main-menu" class="screen">
+      <button id="mute-button">🔊</button>
+      <div id="main-menu-content" style="display: flex; flex-direction: column; align-items: center;">
+        <h1>Speed Racer</h1>
+        <p>Total Coins: <span id="total-coins-display">0</span></p>
+        <button id="start-game-button">Start Game</button>
+        <button id="garage-button">Garage</button>
+        <button id="achievements-button">Achievements</button>
+        <p>Highscore: <span id="highscore-display">0</span></p>
+      </div>
+      <div id="garage-screen" style="display: none;">
+        <h2>Garage</h2>
+        <div id="car-options"></div>
+        <hr style="width: 80%; border-color: #555;">
+        <h3>Upgrades</h3>
+        <div id="upgrade-options"></div>
+        <button id="back-to-menu-button">Back</button>
+      </div>
+      <div id="achievements-screen" style="display: none;">
+        <h2>Achievements</h2>
+        <div id="achievements-list"></div>
+        <button id="back-to-menu-from-ach-button">Back</button>
+      </div>
+    </div>
+
+    <div id="game-play-screen" class="screen" style="display: none;">
+      <div id="track"></div>
+      <div id="car">
+        <div id="car-magnet-field"></div>
+        <img src="images/race-car.png" alt="car" id="car-sprite" />
+        <div class="flame"></div>
+      </div>
+      <div id="touch-left" class="touch-control"></div>
+      <div id="touch-right" class="touch-control"></div>
+      <div id="game-stats">
+        <div id="score-display">Score: 0</div>
+        <div id="coin-display">Coins: 0</div>
+        <div id="combo-display"></div>
+      </div>
+      <div id="powerup-timers">
+        <div id="shield-timer" class="timer-bar-container"><div class="timer-bar"></div></div>
+        <div id="magnet-timer" class="timer-bar-container"><div class="timer-bar"></div></div>
+        <div id="nitro-timer" class="timer-bar-container"><div class="timer-bar"></div></div>
+      </div>
+      <div id="countdown"></div>
+      <button id="pause-button">❚❚</button>
+    </div>
+
+    <div id="pause-overlay"><h2>Paused</h2></div>
+    <div id="game-over-overlay">
+      <h2>Game Over</h2>
+      <p>Final Score: <span id="final-score"></span></p>
+      <p>Coins Collected: <span id="final-coins"></span></p>
+      <button id="restart-button">Main Menu</button>
+    </div>
+    <div id="achievement-toast"></div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

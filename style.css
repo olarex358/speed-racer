@@ -1,0 +1,725 @@
+/* =================================
+   Base & Layout
+   ================================= */
+
+body {
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+    background-color: #111;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+    color: white;
+}
+
+#game-container {
+    position: relative;
+    width: 400px;
+    height: 600px;
+    background-color: #222;
+    overflow: hidden;
+    border: 5px solid #555;
+    box-shadow: 0 0 20px #000;
+}
+
+/* =================================
+   Screen Management
+   ================================= */
+
+.screen {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* =================================
+   Main Menu, Garage & Achievements
+   ================================= */
+
+#main-menu {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: #1a1a1a;
+    z-index: 10;
+    animation: fade-in 0.5s ease-in-out;
+}
+
+#mute-button {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 40px;
+    height: 40px;
+    font-size: 1.5rem;
+    background-color: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: white;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+
+#main-menu h1,
+#garage-screen h2,
+#achievements-screen h2 {
+    text-align: center;
+    color: yellow;
+    text-shadow: 2px 2px 5px #000;
+    margin: 10px 0;
+}
+
+#garage-screen h3 {
+    font-size: 1.5rem;
+}
+
+#main-menu button {
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    margin: 10px 0;
+}
+
+#main-menu button#start-game-button {
+    animation: pulse 2s infinite;
+}
+
+#garage-screen,
+#achievements-screen {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+#car-options {
+    display: flex;
+    gap: 20px;
+    margin: 10px 0;
+}
+
+.car-option {
+    border: 3px solid #555;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    background-color: #333;
+}
+
+.car-option.selected {
+    border-color: yellow;
+    box-shadow: 0 0 15px yellow;
+}
+
+.car-option.locked {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.car-option img {
+    width: 50px;
+    height: 50px;
+}
+
+#upgrade-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 90%;
+}
+
+.upgrade-option {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #333;
+    padding: 8px;
+    border-radius: 5px;
+    border: 2px solid #555;
+}
+
+.upgrade-option-info {
+    flex-grow: 1;
+}
+
+.upgrade-option-info h4 {
+    margin: 0 0 5px 0;
+    color: #ffa500;
+}
+
+.upgrade-option-info p {
+    margin: 0;
+    font-size: 0.8rem;
+}
+
+.upgrade-button {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+}
+
+.upgrade-button:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
+#achievements-list {
+    width: 100%;
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.achievement-item {
+    display: flex;
+    align-items: center;
+    background-color: #333;
+    border: 2px solid #555;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.achievement-item .icon {
+    font-size: 2rem;
+    margin-right: 15px;
+}
+
+.achievement-item.locked {
+    filter: grayscale(1);
+    opacity: 0.6;
+}
+
+.achievement-item.unlocked {
+    border-color: #ffd700;
+}
+
+.achievement-item-info h4 {
+    margin: 0 0 5px 0;
+    color: #ffd700;
+}
+
+.achievement-item-info p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #ccc;
+}
+
+
+/* =================================
+   Animations
+   ================================= */
+@keyframes screen-shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    20%,
+    60% {
+        transform: translateX(-10px);
+    }
+
+    40%,
+    80% {
+        transform: translateX(10px);
+    }
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 10px #007bff;
+    }
+
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 20px #007bff, 0 0 30px #007bff;
+    }
+
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 10px #007bff;
+    }
+}
+
+@keyframes move-track {
+    from {
+        background-position-y: 0;
+    }
+
+    to {
+        background-position-y: -80px;
+    }
+}
+
+@keyframes car-rumble {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-1px);
+    }
+}
+
+@keyframes car-wobble {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    25% {
+        transform: rotate(-8deg);
+    }
+
+    50% {
+        transform: rotate(8deg);
+    }
+
+    75% {
+        transform: rotate(-8deg);
+    }
+
+    100% {
+        transform: rotate(0deg);
+    }
+}
+
+@keyframes move-down {
+    from {
+        transform: translateY(0);
+    }
+
+    to {
+        transform: translateY(var(--fall-distance));
+        /* Use a variable */
+    }
+}
+@keyframes shield-pulse {
+    0% {
+        box-shadow: 0 0 12px 3px rgba(0, 255, 255, 0.7);
+    }
+
+    50% {
+        box-shadow: 0 0 20px 8px rgba(0, 255, 255, 0.4);
+    }
+
+    100% {
+        box-shadow: 0 0 12px 3px rgba(0, 255, 255, 0.7);
+    }
+}
+
+@keyframes flame-flicker {
+
+    0%,
+    100% {
+        transform: scaleY(1) translateY(5px);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scaleY(1.2) translateY(5px);
+        opacity: 0.8;
+    }
+}
+
+@keyframes timer-bar-drain {
+    from {
+        width: 100%;
+    }
+
+    to {
+        width: 0%;
+    }
+}
+
+@keyframes combo-pop {
+    0% {
+        transform: scale(1.5);
+        opacity: 0.5;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes move-in-lane {
+    0% {
+        transform: translateX(-8px);
+    }
+
+    50% {
+        transform: translateX(8px);
+    }
+
+    100% {
+        transform: translateX(-8px);
+    }
+}
+
+@keyframes countdown-zoom {
+    from {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1.2);
+        opacity: 1;
+    }
+}
+
+.screen-shaking {
+    animation: screen-shake 0.5s linear;
+}
+
+/* =================================
+   Game Elements
+   ================================= */
+
+#track {
+    position: absolute;
+    top: 0;
+    left: calc(50% - 100px);
+    width: 200px;
+    height: 100%;
+    background-color: #222;
+    z-index: 1;
+    background-image: linear-gradient(#666 50%, transparent 50%), linear-gradient(#666 50%, transparent 50%);
+    background-size: 5px 40px, 5px 40px;
+    background-repeat: repeat-y, repeat-y;
+    background-position: 5px 0, 190px 0;
+    animation: move-track 0.5s linear infinite;
+    transition: background-color 1s ease-in-out, filter 0.3s ease-in-out;
+}
+
+#track.theme-night {
+    background-color: #1a1a1a;
+    background-image: linear-gradient(aqua 50%, transparent 50%), linear-gradient(aqua 50%, transparent 50%);
+}
+
+#track.theme-desert {
+    background-color: #c2b280;
+    background-image: linear-gradient(#5c4033 50%, transparent 50%), linear-gradient(#5c4033 50%, transparent 50%);
+}
+
+#track.track-blurred {
+    filter: blur(1px);
+}
+
+#car {
+    position: absolute;
+    bottom: 60px;
+    left: 50%;
+    width: 35px;
+    height: 35px;
+    transform: translateX(-50%);
+    z-index: 4;
+    transition: left 0.1s ease-out;
+}
+
+#car-magnet-field {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 150px;
+    height: 150px;
+    border: 2px dashed #00ffff;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    transition: opacity 0.5s;
+    z-index: -1;
+}
+
+#car.damaged {
+    animation: car-flicker 0.5s linear;
+}
+
+#car.wobbling {
+    animation: car-wobble 0.4s linear 7;
+}
+
+#car-sprite {
+    width: 100%;
+    transition: transform 0.1s ease-in-out;
+    animation: car-rumble 0.2s infinite linear;
+    position: relative;
+    z-index: 2;
+}
+
+#car.shield-active #car-sprite {
+    animation: shield-pulse 1.5s infinite, car-rumble 0.2s infinite linear;
+    border-radius: 50%;
+}
+
+.flame {
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 12px;
+    height: 25px;
+    background: linear-gradient(orange, yellow);
+    border-radius: 50% 50% 0 0;
+    opacity: 0;
+    animation: flame-flicker 0.15s infinite;
+}
+
+#car.nitro-active .flame {
+    opacity: 1;
+}
+
+.tilt-left {
+    transform: rotate(-15deg);
+}
+
+.tilt-right {
+    transform: rotate(15deg);
+}
+
+/* =================================
+   Game Items
+   ================================= */
+
+.game-item {
+    position: absolute;
+    z-index: 3;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.obstacle {
+    width: 40px;
+    height: 40px;
+    background-image: url('images/obstacle.png');
+}
+
+.oil-slick {
+    width: 45px;
+    height: 30px;
+    background-image: url('images/oil-slick.png');
+    z-index: 2;
+}
+
+.coin {
+    width: 25px;
+    height: 25px;
+    background-image: url('images/coin.png');
+}
+
+.power-up {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+}
+
+.magnet-powerup {
+    background-color: #ff00ff;
+    box-shadow: 0 0 10px #ff00ff;
+}
+
+.shield-powerup {
+    width: 30px;
+    height: 30px;
+    background-image: url('images/shield.png');
+}
+
+.nitro-powerup {
+    width: 30px;
+    height: 30px;
+    background-image: url('images/nitro.png');
+}
+
+.moving-obstacle {
+    width: 35px;
+    height: 35px;
+    background-image: url('images/obstacle_car.png');
+}
+
+/* =================================
+   UI & Overlays
+   ================================= */
+
+#game-stats {
+    position: absolute;
+    top: 50px;
+    left: 10px;
+    right: 10px;
+    font-size: 1.2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 5;
+}
+
+#combo-display {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #ffa500;
+    text-shadow: 1px 1px 3px #000;
+}
+
+#combo-display.active {
+    animation: combo-pop 0.2s ease-out;
+}
+
+#powerup-timers {
+    position: absolute;
+    top: 100px;
+    left: 10px;
+    width: 100px;
+    z-index: 5;
+}
+
+.timer-bar-container {
+    height: 15px;
+    background-color: #555;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    padding: 2px;
+    display: none;
+}
+
+.timer-bar {
+    height: 100%;
+    width: 100%;
+    border-radius: 3px;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+}
+
+#shield-timer .timer-bar {
+    background-color: #00ffff;
+}
+
+#magnet-timer .timer-bar {
+    background-color: #ff00ff;
+}
+
+#nitro-timer .timer-bar {
+    background-color: #ffa500;
+}
+
+#pause-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 11;
+    background: #ffffff55;
+    border: none;
+    color: white;
+    width: 35px;
+    height: 35px;
+    border-radius: 5px;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+#countdown,
+#game-over-overlay,
+#pause-overlay {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+#countdown {
+    font-size: 4rem;
+    font-weight: bold;
+}
+
+#game-over-overlay,
+#pause-overlay {
+    background-color: rgba(0, 0, 0, 0.8);
+    animation: fade-in 0.3s ease-in;
+}
+
+#achievement-toast {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translate(-50%, 150%);
+    background-color: #ffd700;
+    color: #111;
+    padding: 15px 25px;
+    border-radius: 10px;
+    z-index: 20;
+    text-align: center;
+    box-shadow: 0 0 15px #000;
+    opacity: 0;
+    transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+}
+
+#achievement-toast.active {
+    transform: translate(-50%, 0);
+    opacity: 1;
+}
+
+#achievement-toast h3 {
+    margin: 0 0 5px 0;
+    font-size: 1.1rem;
+}
+
+#achievement-toast p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.touch-control {
+    position: absolute;
+    top: 0;
+    width: 50%;
+    height: 100%;
+    z-index: 6;
+}
+
+#touch-left {
+    left: 0;
+}
+
+#touch-right {
+    right: 0;
+}
